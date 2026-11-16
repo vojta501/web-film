@@ -19,11 +19,17 @@
                 <span>Cine<strong>Pulse</strong> <span class="logo-csfd">ČSFD</span></span>
             </a>
             <div class="nav-akce">
-                <button id="btn-otevrit-pridat" class="tlacitko-pridat">
-                    + Přidat film z ČSFD
+                <button id="btn-nahodny-film" class="tlacitko-obrys" title="Vylosuje náhodný film z aktuálního výběru">
+                    🎲 Nevím, na co koukat
                 </button>
                 <button id="btn-rychle-srovnani" class="tlacitko-obrys">
                     ⚡ Porovnat TOP 2
+                </button>
+                <button id="btn-otevrit-pridat" class="tlacitko-pridat">
+                    + Přidat film
+                </button>
+                <button id="btn-tema" class="tlacitko-ikona" title="Přepnout světlý / tmavý režim" aria-label="Přepnout motiv">
+                    ☀️
                 </button>
             </div>
         </div>
@@ -33,9 +39,9 @@
     <section class="hero">
         <div class="hero-zare"></div>
         <div class="kontejner hero-obsah">
-            <span class="stitek-novinka">Žebříček podle procent & barev ČSFD</span>
+            <span class="stitek-novinka">Žebříček ČSFD • Vlastní hodnocení • Srovnávač</span>
             <h1>Srovnávej filmy podle <span class="text-gradient">hodnocení ČSFD</span></h1>
-            <p>Filtruj podle žánrů, řaď filmy podle procent a postav až 3 snímky vedle sebe. Chybí ti tu nějaký film? Přidej si ho jedním kliknutím.</p>
+            <p>Filtruj žánry, uděluj filmům vlastní hvězdičky, ukládej si tipy na večer, pouštěj trailery a porovnej až 3 snímky vedle sebe.</p>
             
             <!-- Vyhledávání a řazení -->
             <div class="ovladaci-panel">
@@ -46,6 +52,7 @@
                 <select id="razeni-select" aria-label="Řazení filmů">
                     <option value="hodnoceni-desc">Nejvyšší % na ČSFD</option>
                     <option value="hodnoceni-asc">Nejnižší % na ČSFD</option>
+                    <option value="moje-desc">Moje nejvyšší hodnocení</option>
                     <option value="rok-desc">Nejnovější filmy</option>
                     <option value="delka-asc">Nejkratší stopáž</option>
                 </select>
@@ -56,16 +63,27 @@
     <!-- Hlavní obsah -->
     <main class="kontejner hlavni-sekce">
         
-        <!-- Filtry žánrů -->
-        <div class="zanry-lista" id="zanry-filtry">
-            <button class="zanr-btn aktivni" data-zanr="Vše">Všechny žánry</button>
-            <button class="zanr-btn" data-zanr="Drama">Drama</button>
-            <button class="zanr-btn" data-zanr="Komedie">Komedie</button>
-            <button class="zanr-btn" data-zanr="Sci-Fi">Sci-Fi</button>
-            <button class="zanr-btn" data-zanr="Akční">Akční</button>
-            <button class="zanr-btn" data-zanr="Krimi">Krimi</button>
-            <button class="zanr-btn" data-zanr="Fantasy">Fantasy</button>
-            <button class="zanr-btn" data-zanr="Animovaný">Animovaný</button>
+        <!-- Filtry žánrů a osobních seznamů -->
+        <div class="filtry-obal">
+            <div class="zanry-lista" id="zanry-filtry">
+                <button class="zanr-btn aktivni" data-zanr="Vše">Všechny žánry</button>
+                <button class="zanr-btn" data-zanr="Drama">Drama</button>
+                <button class="zanr-btn" data-zanr="Komedie">Komedie</button>
+                <button class="zanr-btn" data-zanr="Sci-Fi">Sci-Fi</button>
+                <button class="zanr-btn" data-zanr="Akční">Akční</button>
+                <button class="zanr-btn" data-zanr="Krimi">Krimi</button>
+                <button class="zanr-btn" data-zanr="Fantasy">Fantasy</button>
+                <button class="zanr-btn" data-zanr="Animovaný">Animovaný</button>
+            </div>
+
+            <div class="osobni-filtry">
+                <button id="btn-filtr-watchlist" class="filtr-pilulka">
+                    🔖 Chci vidět (<span id="pocet-watchlist">0</span>)
+                </button>
+                <button id="btn-filtr-ohodnocene" class="filtr-pilulka">
+                    ⭐ Moje hodnocené (<span id="pocet-ohodnocenych">0</span>)
+                </button>
+            </div>
         </div>
 
         <!-- Stavový řádek -->
@@ -102,8 +120,8 @@
         <div class="modal-okno">
             <div class="modal-hlavicka">
                 <div>
-                    <h2>Srovnání filmů (ČSFD)</h2>
-                    <p>Porovnání procentuálního hodnocení, stopáže a parametrů</p>
+                    <h2>Srovnání filmů (ČSFD vs. Tvé hodnocení)</h2>
+                    <p>Porovnání procent, tvých hvězdiček, stopáže a parametrů</p>
                 </div>
                 <button id="btn-zavrit-modal" class="zavrit-btn" aria-label="Zavřít">×</button>
             </div>
@@ -111,17 +129,18 @@
         </div>
     </div>
 
-    <!-- Modální okno pro přidání vlastního filmu -->
+    <!-- Modální okno pro přidání / úpravu filmu -->
     <div class="modal-pozadi skryty" id="pridat-modal">
         <div class="modal-okno modal-uzky">
             <div class="modal-hlavicka">
                 <div>
-                    <h2>Přidat film z ČSFD</h2>
-                    <p>Film se uloží do tvého žebříčku v prohlížeči</p>
+                    <h2 id="form-modal-nadpis">Přidat film z ČSFD</h2>
+                    <p id="form-modal-podnadpis">Film se uloží do tvého žebříčku v prohlížeči</p>
                 </div>
                 <button id="btn-zavrit-pridat" class="zavrit-btn" aria-label="Zavřít">×</button>
             </div>
             <form id="form-pridat-film" class="modal-telo formular-film">
+                <input type="hidden" id="edit-film-id" value="">
                 <div class="pole-skupina">
                     <label for="novy-nazev">Název filmu *</label>
                     <input type="text" id="novy-nazev" required placeholder="Např. Pupendo">
@@ -159,20 +178,38 @@
                     <input type="text" id="novy-reziser" placeholder="Např. Jan Hřebejk">
                 </div>
                 <div class="pole-skupina">
+                    <label for="novy-plakat">Odkaz na plakát (URL obrázku – nepovinné)</label>
+                    <input type="url" id="novy-plakat" placeholder="https://...">
+                </div>
+                <div class="pole-skupina">
                     <label for="novy-popis">Krátký popis nebo hlavní přednost</label>
                     <input type="text" id="novy-popis" placeholder="Česká hořkosladká komedie">
                 </div>
                 <div class="form-akce">
-                    <button type="button" id="btn-reset-dat" class="tlacitko-text" title="Obnoví původní seznam">Obnovit výchozí</button>
-                    <button type="submit" class="tlacitko-primarni">Uložit do žebříčku</button>
+                    <button type="button" id="btn-reset-dat" class="tlacitko-text" title="Obnoví původní seznam 36 filmů">Obnovit výchozí</button>
+                    <button type="submit" id="btn-ulozit-film" class="tlacitko-primarni">Uložit film</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Modální okno pro náhodný film na večer -->
+    <div class="modal-pozadi skryty" id="nahodny-modal">
+        <div class="modal-okno modal-uzky">
+            <div class="modal-hlavicka">
+                <div>
+                    <h2>🎲 Tip na dnešní večer</h2>
+                    <p>Náhodně vybráno z tvého aktuálního filtru</p>
+                </div>
+                <button id="btn-zavrit-nahodny" class="zavrit-btn" aria-label="Zavřít">×</button>
+            </div>
+            <div class="modal-telo" id="nahodny-film-obsah"></div>
+        </div>
+    </div>
+
     <footer class="paticka">
         <div class="kontejner">
-            <p>© 2026 CinePulse ČSFD • Vlastní filmový srovnávač</p>
+            <p>© 2026 CinePulse ČSFD • Filmový srovnávač, hodnocení a watchlist</p>
         </div>
     </footer>
 
@@ -188,7 +225,10 @@
                 reziser: "Frank Darabont",
                 silnaStranka: "Nejlépe hodnocený film na ČSFD všech dob",
                 popis: "Mladý bankéř Andy Dufresne je neprávem odsouzen za vraždu a ve věznici Shawshank si postupně získává respekt i přátelství.",
-                ikona: "🏛️"
+                ikona: "🏛️",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 2,
@@ -200,7 +240,10 @@
                 reziser: "Robert Zemeckis",
                 silnaStranka: "Dokonalé propojení humoru, emocí a amerických dějin",
                 popis: "Dobrosrdečný Forrest s nízkým IQ se díky své upřímnosti a vytrvalosti stane svědkem i aktérem klíčových událostí 20. století.",
-                ikona: "🏃"
+                ikona: "🏃",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 3,
@@ -212,7 +255,10 @@
                 reziser: "Frank Darabont",
                 silnaStranka: "Silný lidský příběh a nezapomenutelný výkon M. C. Duncana",
                 popis: "Dozorce v cele smrti zjistí, že obrovitý vězeň odsouzený za brutální vraždu vládne zázračným léčitelským darem.",
-                ikona: "✨"
+                ikona: "✨",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 4,
@@ -224,7 +270,10 @@
                 reziser: "David Fincher",
                 silnaStranka: "Temná deštivá atmosféra a šokující závěr",
                 popis: "Dva detektivové pátrají po sériovém vrahovi, který své oběti trestá podle sedmi smrtelných hříchů.",
-                ikona: "🌧️"
+                ikona: "🌧️",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 5,
@@ -236,7 +285,10 @@
                 reziser: "Miloš Forman",
                 silnaStranka: "Legendární režie Miloše Formana a výkon Jacka Nicholsona",
                 popis: "Svobodomyslný buřič McMurphy se nechá zavřít do psychiatrické léčebny, kde narazí na nekompromisní sestru Ratchedovou.",
-                ikona: "🕊️"
+                ikona: "🕊️",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 6,
@@ -248,7 +300,10 @@
                 reziser: "Steven Spielberg",
                 silnaStranka: "Mrazivé černobílé zpracování skutečného příběhu",
                 popis: "Německý obchodník Oskar Schindler zachrání během druhé světové války více než tisícovku polských Židů.",
-                ikona: "🕯️"
+                ikona: "🕯️",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 7,
@@ -260,7 +315,10 @@
                 reziser: "Jan Hřebejk",
                 silnaStranka: "Nejslavnější české filmové hlášky a vánoční atmosféra",
                 popis: "Hořkosladká komedie o generačních střetech dvou sousedských rodin na sklonku šedesátých let v Praze.",
-                ikona: "🥄"
+                ikona: "🥄",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 8,
@@ -272,7 +330,10 @@
                 reziser: "Peter Jackson",
                 silnaStranka: "Epické vyvrcholení trilogie oceněné 11 Oscary",
                 popis: "Frodo se Samem se blíží k Hoře osudu, zatímco Aragorn vede poslední bitvu o záchranu Středozemě.",
-                ikona: "👑"
+                ikona: "👑",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 9,
@@ -284,7 +345,10 @@
                 reziser: "Peter Jackson",
                 silnaStranka: "Dechberoucí novozélandská příroda a výprava",
                 popis: "Mladý hobit Frodo Pytlík se vydává na nebezpečnou pouť napříč Středozemí, aby zničil Jeden prsten moci.",
-                ikona: "💍"
+                ikona: "💍",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 10,
@@ -296,7 +360,10 @@
                 reziser: "Francis Ford Coppola",
                 silnaStranka: "Základní kámen mafiánských filmů",
                 popis: "Příběh mocné newyorské mafiánské rodiny Corleonových a proměny nejmladšího syna Michaela.",
-                ikona: "🌹"
+                ikona: "🌹",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 11,
@@ -308,7 +375,10 @@
                 reziser: "Olivier Nakache",
                 silnaStranka: "Nakažlivý optimismus a skvělá chemie hlavní dvojice",
                 popis: "Ochrnutý bohatý aristokrat si najme jako ošetřovatele živelného mladíka z pařížského předměstí.",
-                ikona: "🤝"
+                ikona: "🤝",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 12,
@@ -320,7 +390,10 @@
                 reziser: "Christopher Nolan",
                 silnaStranka: "Legendární Joker Heatha Ledgera a strhující tempo",
                 popis: "Batman čelí v Gothamu nevyzpytatelnému zločinci Jokerovi, který chce město uvrhnout do naprostého chaosu.",
-                ikona: "🦇"
+                ikona: "🦇",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 13,
@@ -332,7 +405,10 @@
                 reziser: "Lana a Lilly Wachowski",
                 silnaStranka: "Revoluční akční scény a nadčasová myšlenka",
                 popis: "Hacker Neo odhalí šokující pravdu: svět, ve kterém žije, je jen počítačová simulace ovládaná stroji.",
-                ikona: "🕶️"
+                ikona: "🕶️",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 14,
@@ -344,7 +420,10 @@
                 reziser: "Quentin Tarantino",
                 silnaStranka: "Kultovní dialogy a propletené časové roviny",
                 popis: "Tři zdánlivě nesouvisející příběhy gangsterů, boxera a zlodějů v Los Angeles se nečekaně protnou.",
-                ikona: "💼"
+                ikona: "💼",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 15,
@@ -356,7 +435,10 @@
                 reziser: "Denis Villeneuve",
                 silnaStranka: "Monumentální audiovizuální zážitek",
                 popis: "Paul Atreides se po boku Fremenů vydává na cestu pomsty proti spiklencům, kteří zničili jeho rodinu.",
-                ikona: "🏜️"
+                ikona: "🏜️",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 16,
@@ -368,7 +450,10 @@
                 reziser: "Christopher Nolan",
                 silnaStranka: "Hudba Hanse Zimmera a pouto mezi otcem a dcerou",
                 popis: "Tým astronautů cestuje červí dírou do jiné galaxie, aby našel obyvatelnou planetu pro umírající lidstvo.",
-                ikona: "🚀"
+                ikona: "🚀",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 17,
@@ -380,7 +465,10 @@
                 reziser: "Christopher Nolan",
                 silnaStranka: "Promyšlená architektura snů v několika úrovních",
                 popis: "Zloděj tajemství z podvědomí dostane opačný úkol: vložit do mysli dědice impéria zcela novou myšlenku.",
-                ikona: "🌀"
+                ikona: "🌀",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 18,
@@ -392,7 +480,10 @@
                 reziser: "Pete Docter",
                 silnaStranka: "Chytrý nápad ztvárnit lidské emoce jako postavičky",
                 popis: "Radost, Smutek, Vztek, Strach a Nechuť řídí z řídicího centra mysl jedenáctileté Riley po stěhování.",
-                ikona: "🧠"
+                ikona: "🧠",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 19,
@@ -404,7 +495,10 @@
                 reziser: "Joaquim Dos Santos",
                 silnaStranka: "Unikátní animace propojující desítky výtvarných stylů",
                 popis: "Miles Morales se dostává do střetu s elitní společností Spider-Manů napříč mnohovesmírem.",
-                ikona: "🕸️"
+                ikona: "🕸️",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 20,
@@ -416,7 +510,10 @@
                 reziser: "Ridley Scott",
                 silnaStranka: "Velkolepé souboje v Koloseu a charismatický Russell Crowe",
                 popis: "Zrazený římský generál Maximus se vrací do Říma jako gladiátor, aby pomstil vyvraždění své rodiny.",
-                ikona: "⚔️"
+                ikona: "⚔️",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 21,
@@ -428,7 +525,10 @@
                 reziser: "Andrew Adamson",
                 silnaStranka: "Skvělá parodie na klasické pohádky i perfektní dabing",
                 popis: "Zelený zlobr Shrek se vydává s upovídaným Oslíkem zachránit princeznu Fionu, aby získal zpět svůj klid v bažině.",
-                ikona: "🧅"
+                ikona: "🧅",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 22,
@@ -440,7 +540,10 @@
                 reziser: "Jan Svěrák",
                 silnaStranka: "Laskavý humor Zdeňka Svěráka a nezapomenutelný Igor Hnízdo",
                 popis: "Do poválečné třídy plné rošťáků nastupuje přísný učitel Igor Hnízdo, který si rychle zjedná respekt.",
-                ikona: "🏫"
+                ikona: "🏫",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 23,
@@ -452,7 +555,10 @@
                 reziser: "James Cameron",
                 silnaStranka: "Jeden z nejlepších akčních filmů všech dob",
                 popis: "Přeprogramovaný kyborg T-800 chrání mladého Johna Connora před téměř nezničitelným terminátorem z tekutého kovu.",
-                ikona: "🤖"
+                ikona: "🤖",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 24,
@@ -464,7 +570,10 @@
                 reziser: "Robert Zemeckis",
                 silnaStranka: "Hravé cestování časem ve voze DeLorean",
                 popis: "Marty McFly se omylem přenese v čase o 30 let zpět a musí zajistit, aby se jeho budoucí rodiče do sebe zamilovali.",
-                ikona: "⚡"
+                ikona: "⚡",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 25,
@@ -476,7 +585,10 @@
                 reziser: "Lee Unkrich",
                 silnaStranka: "Barevný svět mexického svátku mrtvých a dojemný příběh",
                 popis: "Mladý hudebník Miguel se ocitne v říši mrtvých, kde hledá svého slavného prapradědečka.",
-                ikona: "🎸"
+                ikona: "🎸",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 26,
@@ -488,7 +600,10 @@
                 reziser: "Oldřich Lipský",
                 silnaStranka: "Nesmrtelné hlášky z večerní školy",
                 popis: "Dospělí zaměstnanci továrny usedají znovu do školních lavic, aby si doplnili maturitu.",
-                ikona: "✒️"
+                ikona: "✒️",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 27,
@@ -500,7 +615,10 @@
                 reziser: "David Ondříček",
                 silnaStranka: "Generační výpověď z přelomu tisíciletí",
                 popis: "Osudy několika mladých lidí v Praze se během pár dnů bláznivě zamotají.",
-                ikona: "🎧"
+                ikona: "🎧",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 28,
@@ -512,7 +630,10 @@
                 reziser: "Steven Spielberg",
                 silnaStranka: "Dinosauři, kteří vypadají skvěle i po více než 30 letech",
                 popis: "Návštěva ostrovního zábavního parku s naklonovanými dinosaury se změní v boj o holý život.",
-                ikona: "🦖"
+                ikona: "🦖",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 29,
@@ -524,7 +645,10 @@
                 reziser: "Christopher Nolan",
                 silnaStranka: "Strhující střih a mimořádné herecké výkony",
                 popis: "Životní příběh fyzika J. Roberta Oppenheimera a vzniku první atomové bomby.",
-                ikona: "⚛️"
+                ikona: "⚛️",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 30,
@@ -536,7 +660,10 @@
                 reziser: "Anthony a Joe Russo",
                 silnaStranka: "Velkolepé završení desetileté ságy Marvelu",
                 popis: "Zbývající hrdinové se pokusí zvrátit Thanosův čin a zachránit polovinu vesmíru.",
-                ikona: "🛡️"
+                ikona: "🛡️",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 31,
@@ -548,7 +675,10 @@
                 reziser: "Dean DeBlois",
                 silnaStranka: "Přátelství Škyťáka a Bezzubky i skvělá hudba",
                 popis: "Mladý viking se místo zabití draka se vzácným Nočním běsem spřátelí a změní osud celé vesnice.",
-                ikona: "🐉"
+                ikona: "🐉",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 32,
@@ -560,7 +690,10 @@
                 reziser: "Alfonso Cuarón",
                 silnaStranka: "Nejtemnější a režijně nejzajímavější díl celé série",
                 popis: "Z kouzelnického vězení Azkaban uprchl nebezpečný Sirius Black a míří do Bradavic.",
-                ikona: "⚡"
+                ikona: "⚡",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 33,
@@ -572,7 +705,10 @@
                 reziser: "Gore Verbinski",
                 silnaStranka: "Nezaměnitelný kapitán Jack Sparrow",
                 popis: "Kovář Will Turner spojí síly s výstředním pirátem Jackem Sparrowem, aby zachránil unesenou Elizabeth.",
-                ikona: "🏴‍☠️"
+                ikona: "🏴‍☠️",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 34,
@@ -584,7 +720,10 @@
                 reziser: "James Cameron",
                 silnaStranka: "Svět měsíce Pandora propracovaný do posledního detailu",
                 popis: "Bývalý mariňák Jake Sully se v těle avatara sblíží s domorodým kmenem Na'vi.",
-                ikona: "🌿"
+                ikona: "🌿",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 35,
@@ -596,7 +735,10 @@
                 reziser: "Andy Serkis",
                 silnaStranka: "Svižná stopáž a hašteření mezi Eddiem a Venomem",
                 popis: "Eddie Brock se snaží sžít se svým mimozemským symbiontem, zatímco z vězení uniká nebezpečný Carnage.",
-                ikona: "🕷️"
+                ikona: "🕷️",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             },
             {
                 id: 36,
@@ -608,14 +750,19 @@
                 reziser: "Zdeněk Troška",
                 silnaStranka: "Série lidových anekdot z fiktivního městečka Kameňákov",
                 popis: "Filmová mozaika poskládaná ze známých českých vtipů o policajtech, doktorech a manželství.",
-                ikona: "🪨"
+                ikona: "🪨",
+                plakat: "",
+                chciVidet: false,
+                mojeHodnoceni: 0
             }
         ];
 
-        // Klíč v2 zajistí okamžité načtení nového rozšířeného seznamu filmů
-        let filmyData = JSON.parse(localStorage.getItem("cinepulse_csfd_filmy_v2")) || [...vychoziFilmy];
+        // Načtení dat z localStorage (v3 s podporou vlastních hvězdiček, watchlistu a plakátů)
+        let filmyData = JSON.parse(localStorage.getItem("cinepulse_csfd_filmy_v3")) || [...vychoziFilmy];
 
         let aktivniZanr = "Vše";
+        let jenWatchlist = false;
+        let jenOhodnocene = false;
         let hledanyText = "";
         let razeni = "hodnoceni-desc";
         let vybraneProSrovnani = [];
@@ -628,6 +775,35 @@
         const modalEl = document.getElementById("srovnani-modal");
         const srovnaniTabulkaObal = document.getElementById("srovnani-tabulka-obal");
         const pridatModalEl = document.getElementById("pridat-modal");
+        const nahodnyModalEl = document.getElementById("nahodny-modal");
+
+        // Načtení a přepínání světlého / tmavého režimu
+        const ulozeneTema = localStorage.getItem("cinepulse_tema") || "dark";
+        if (ulozeneTema === "light") {
+            document.documentElement.setAttribute("data-theme", "light");
+            document.getElementById("btn-tema").textContent = "🌙";
+        }
+
+        document.getElementById("btn-tema").addEventListener("click", () => {
+            const aktualni = document.documentElement.getAttribute("data-theme");
+            if (aktualni === "light") {
+                document.documentElement.removeAttribute("data-theme");
+                localStorage.setItem("cinepulse_tema", "dark");
+                document.getElementById("btn-tema").textContent = "☀️";
+            } else {
+                document.documentElement.setAttribute("data-theme", "light");
+                localStorage.setItem("cinepulse_tema", "light");
+                document.getElementById("btn-tema").textContent = "🌙";
+            }
+        });
+
+        function escapeHtml(text) {
+            return String(text || "")
+                .replace(/&/g, "&")
+                .replace(/</g, "<")
+                .replace(/>/g, ">")
+                .replace(/"/g, """);
+        }
 
         function ziskejTriduCsfd(procenta) {
             if (procenta >= 70) return "csfd-cervena";
@@ -636,27 +812,68 @@
         }
 
         function ulozData() {
-            localStorage.setItem("cinepulse_csfd_filmy_v2", JSON.stringify(filmyData));
+            localStorage.setItem("cinepulse_csfd_filmy_v3", JSON.stringify(filmyData));
+            aktualizujPoctyFiltru();
         }
 
-        function vykresliFilmy() {
+        function aktualizujPoctyFiltru() {
+            document.getElementById("pocet-watchlist").textContent = filmyData.filter(f => f.chciVidet).length;
+            document.getElementById("pocet-ohodnocenych").textContent = filmyData.filter(f => (f.mojeHodnoceni || 0) > 0).length;
+        }
+
+        function ziskejFiltrovaneFilmy() {
             const dotaz = hledanyText.toLowerCase().trim();
 
             let filtrovane = filmyData.filter(film => {
                 const shodaZanr = aktivniZanr === "Vše" || film.zanry.includes(aktivniZanr);
+                const shodaWatchlist = !jenWatchlist || film.chciVidet;
+                const shodaOhodnocene = !jenOhodnocene || (film.mojeHodnoceni || 0) > 0;
                 const shodaText = film.nazev.toLowerCase().includes(dotaz) ||
                                   film.reziser.toLowerCase().includes(dotaz) ||
                                   String(film.rok).includes(dotaz);
-                return shodaZanr && shodaText;
+                return shodaZanr && shodaWatchlist && shodaOhodnocene && shodaText;
             });
 
             filtrovane.sort((a, b) => {
                 if (razeni === "hodnoceni-desc") return b.hodnoceni - a.hodnoceni;
                 if (razeni === "hodnoceni-asc") return a.hodnoceni - b.hodnoceni;
+                if (razeni === "moje-desc") return (b.mojeHodnoceni || 0) - (a.mojeHodnoceni || 0) || b.hodnoceni - a.hodnoceni;
                 if (razeni === "rok-desc") return b.rok - a.rok;
                 if (razeni === "delka-asc") return a.delka - b.delka;
                 return 0;
             });
+
+            return filtrovane;
+        }
+
+        function vytvorHvezdickyHtml(film) {
+            const aktualni = film.mojeHodnoceni || 0;
+            let hvezdy = "";
+            for (let i = 1; i <= 5; i++) {
+                hvezdy += `
+                    <button 
+                        type="button"
+                        class="hvezda-btn ${i <= aktualni ? 'aktivni' : ''}" 
+                        onclick="nastavHvezdicky(${film.id}, ${i})"
+                        title="Ohodnotit ${i} z 5 hvězdiček (opětovným kliknutím zrušíš)">
+                        ★
+                    </button>
+                `;
+            }
+            return `
+                <div class="moje-hodnoceni-box">
+                    <span class="moje-hodnoceni-popisek">Moje hodnocení:</span>
+                    <div class="hvezdy-radek">
+                        ${hvezdy}
+                        ${aktualni > 0 ? `<span class="moje-hodnoceni-cislo">${aktualni}/5</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function vykresliFilmy() {
+            aktualizujPoctyFiltru();
+            const filtrovane = ziskejFiltrovaneFilmy();
 
             pocetFilmuEl.textContent = `Zobrazeno ${filtrovane.length} ${sklonujFilmy(filtrovane.length)}`;
 
@@ -664,10 +881,10 @@
                 const csfdUrl = `https://www.csfd.cz/hledat/?q=${encodeURIComponent(hledanyText)}`;
                 filmyKontejner.innerHTML = `
                     <div class="prazdny-stav">
-                        <h3>Film „${hledanyText || aktivniZanr}“ v seznamu zatím není</h3>
-                        <p>Můžeš si ho rovnou vyhledat na ČSFD a jedním kliknutím přidat do své databáze.</p>
+                        <h3>Pro tento filtr nebyl nalezen žádný film</h3>
+                        <p>Zkus zrušit některý z filtrů nebo si film rovnou vyhledej na ČSFD a přidej do své databáze.</p>
                         <div class="prazdny-akce">
-                            ${hledanyText ? `<a href="${csfdUrl}" target="_blank" rel="noopener" class="tlacitko-obrys">🔍 Najít na ČSFD.cz</a>` : ''}
+                            ${hledanyText ? `<a href="${csfdUrl}" target="_blank" rel="noopener" class="tlacitko-obrys">🔍 Najít „${escapeHtml(hledanyText)}“ na ČSFD.cz</a>` : ''}
                             <button onclick="otevritPridatSpredvyplnenim()" class="tlacitko-primarni">+ Přidat film ručně</button>
                         </div>
                     </div>
@@ -679,12 +896,47 @@
                 const jeVybran = vybraneProSrovnani.includes(film.id);
                 const tridaBarvy = ziskejTriduCsfd(film.hodnoceni);
                 const csfdOdkaz = `https://www.csfd.cz/hledat/?q=${encodeURIComponent(film.nazev)}`;
+                const trailerOdkaz = `https://www.youtube.com/results?search_query=${encodeURIComponent(film.nazev + " " + film.rok + " trailer cz")}`;
+                const maPlakat = film.plakat && film.plakat.trim().length > 5;
 
                 return `
                     <article class="film-karta ${jeVybran ? 'vybrana-karta' : ''}">
-                        <div class="film-hlavicka-karta ${tridaBarvy}-pozadi">
-                            <span class="poradi-odznak">#${poradi + 1}</span>
-                            <span class="plakat-ikona">${film.ikona || "🎬"}</span>
+                        <div class="film-hlavicka-karta ${tridaBarvy}-pozadi ${maPlakat ? 'ma-obrazek' : ''}">
+                            ${maPlakat ? `
+                                <img 
+                                    src="${escapeHtml(film.plakat)}" 
+                                    alt="${escapeHtml(film.nazev)}" 
+                                    class="film-plakat-img"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                                <span class="plakat-ikona" style="display:none;">${film.ikona || "🎬"}</span>
+                            ` : `
+                                <span class="plakat-ikona">${film.ikona || "🎬"}</span>
+                            `}
+
+                            <div class="horni-ovladani-karta">
+                                <span class="poradi-odznak">#${poradi + 1}</span>
+                                <div class="karta-mini-akce">
+                                    <button 
+                                        class="mini-btn ${film.chciVidet ? 'aktivni-watchlist' : ''}" 
+                                        onclick="prepnoutChciVidet(${film.id})"
+                                        title="${film.chciVidet ? 'Odebrat ze seznamu Chci vidět' : 'Přidat do seznamu Chci vidět'}">
+                                        🔖
+                                    </button>
+                                    <button 
+                                        class="mini-btn" 
+                                        onclick="otevritUpravuFilmu(${film.id})"
+                                        title="Upravit film">
+                                        ✏️
+                                    </button>
+                                    <button 
+                                        class="mini-btn mini-btn-smazat" 
+                                        onclick="smazatFilm(${film.id})"
+                                        title="Smazat film">
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
+
                             <div class="csfd-odznak ${tridaBarvy}">
                                 ${film.hodnoceni} %
                             </div>
@@ -693,12 +945,15 @@
                         <div class="film-obsah">
                             <div class="zanr-stitky">
                                 <span class="stitek-rok">${film.rok}</span>
-                                ${film.zanry.map(z => `<span class="stitek-zanr">${z}</span>`).join("")}
+                                ${film.zanry.map(z => `<span class="stitek-zanr">${escapeHtml(z)}</span>`).join("")}
+                                ${film.chciVidet ? `<span class="stitek-watchlist">🔖 Chci vidět</span>` : ''}
                             </div>
 
-                            <h3>${film.nazev}</h3>
-                            <p class="film-meta">Režie: <strong>${film.reziser}</strong> • ${film.delka} min</p>
-                            <p class="film-popis">${film.popis}</p>
+                            <h3>${escapeHtml(film.nazev)}</h3>
+                            <p class="film-meta">Režie: <strong>${escapeHtml(film.reziser)}</strong> • ${film.delka} min</p>
+                            <p class="film-popis">${escapeHtml(film.popis)}</p>
+
+                            ${vytvorHvezdickyHtml(film)}
 
                             <div class="hodnoceni-ukazatel">
                                 <div class="progress-pozadi">
@@ -710,9 +965,12 @@
                                 <button 
                                     class="btn-porovnat ${jeVybran ? 'aktivni' : ''}" 
                                     onclick="prepnoutSrovnani(${film.id})">
-                                    ${jeVybran ? '✓ Ve srovnání' : '+ Porovnat'}
+                                    ${jeVybran ? '✓ Vybráno' : '+ Porovnat'}
                                 </button>
-                                <a href="${csfdOdkaz}" target="_blank" rel="noopener" class="btn-csfd-odkaz" title="Otevřít kartu filmu na ČSFD.cz">
+                                <a href="${trailerOdkaz}" target="_blank" rel="noopener" class="btn-odkaz-ikona btn-trailer" title="Přehrát trailer na YouTube">
+                                    ▶ Trailer
+                                </a>
+                                <a href="${csfdOdkaz}" target="_blank" rel="noopener" class="btn-odkaz-ikona" title="Otevřít kartu filmu na ČSFD.cz">
                                     ČSFD ↗
                                 </a>
                             </div>
@@ -726,6 +984,34 @@
             if (pocet === 1) return "film";
             if (pocet >= 2 && pocet <= 4) return "filmy";
             return "filmů";
+        }
+
+        function nastavHvezdicky(id, pocetHvezd) {
+            const film = filmyData.find(f => f.id === id);
+            if (!film) return;
+            film.mojeHodnoceni = (film.mojeHodnoceni === pocetHvezd) ? 0 : pocetHvezd;
+            ulozData();
+            vykresliFilmy();
+        }
+
+        function prepnoutChciVidet(id) {
+            const film = filmyData.find(f => f.id === id);
+            if (!film) return;
+            film.chciVidet = !film.chciVidet;
+            ulozData();
+            vykresliFilmy();
+        }
+
+        function smazatFilm(id) {
+            const film = filmyData.find(f => f.id === id);
+            if (!film) return;
+            if (confirm(`Opravdu chceš odstranit film „${film.nazev}“ ze seznamu?`)) {
+                filmyData = filmyData.filter(f => f.id !== id);
+                vybraneProSrovnani = vybraneProSrovnani.filter(vId => vId !== id);
+                ulozData();
+                aktualizujDock();
+                vykresliFilmy();
+            }
         }
 
         function prepnoutSrovnani(id) {
@@ -757,7 +1043,7 @@
                 if (!film) return "";
                 return `
                     <span class="dock-pilulka">
-                        ${film.nazev} (${film.hodnoceni} %)
+                        ${escapeHtml(film.nazev)} (${film.hodnoceni} %)
                         <button onclick="prepnoutSrovnani(${film.id})" title="Odebrat">×</button>
                     </span>
                 `;
@@ -785,8 +1071,8 @@
                                     <th>
                                         <div class="tabulka-hlavicka-film">
                                             <span class="tabulka-ikona">${f.ikona || "🎬"}</span>
-                                            <span>${f.nazev}</span>
-                                            ${f.hodnoceni === maxHodnoceni ? '<span class="vitez-stitek">🏆 Vítěz hodnocení</span>' : ''}
+                                            <span>${escapeHtml(f.nazev)}</span>
+                                            ${f.hodnoceni === maxHodnoceni ? '<span class="vitez-stitek">🏆 Vítěz ČSFD</span>' : ''}
                                         </div>
                                     </th>
                                 `).join("")}
@@ -804,8 +1090,18 @@
                                 `).join("")}
                             </tr>
                             <tr>
+                                <td><strong>Moje hodnocení</strong></td>
+                                ${vybraneFilmy.map(f => `
+                                    <td>
+                                        ${f.mojeHodnoceni > 0 
+                                            ? `<span class="tabulka-moje-hvezdy">${"★".repeat(f.mojeHodnoceni)}${"☆".repeat(5 - f.mojeHodnoceni)} (${f.mojeHodnoceni}/5)</span>` 
+                                            : `<span class="text-tlumeny">Nehodnoceno</span>`}
+                                    </td>
+                                `).join("")}
+                            </tr>
+                            <tr>
                                 <td><strong>Žánry</strong></td>
-                                ${vybraneFilmy.map(f => `<td>${f.zanry.join(", ")}</td>`).join("")}
+                                ${vybraneFilmy.map(f => `<td>${escapeHtml(f.zanry.join(", "))}</td>`).join("")}
                             </tr>
                             <tr>
                                 <td><strong>Rok vydání</strong></td>
@@ -817,11 +1113,26 @@
                             </tr>
                             <tr>
                                 <td><strong>Režie</strong></td>
-                                ${vybraneFilmy.map(f => `<td>${f.reziser}</td>`).join("")}
+                                ${vybraneFilmy.map(f => `<td>${escapeHtml(f.reziser)}</td>`).join("")}
                             </tr>
                             <tr>
                                 <td><strong>Hlavní přednost</strong></td>
-                                ${vybraneFilmy.map(f => `<td>${f.silnaStranka || f.popis}</td>`).join("")}
+                                ${vybraneFilmy.map(f => `<td>${escapeHtml(f.silnaStranka || f.popis)}</td>`).join("")}
+                            </tr>
+                            <tr>
+                                <td><strong>Odkazy</strong></td>
+                                ${vybraneFilmy.map(f => {
+                                    const trailerUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(f.nazev + " " + f.rok + " trailer cz")}`;
+                                    const csfdUrl = `https://www.csfd.cz/hledat/?q=${encodeURIComponent(f.nazev)}`;
+                                    return `
+                                        <td>
+                                            <div class="tabulka-odkazy">
+                                                <a href="${trailerUrl}" target="_blank" rel="noopener" class="btn-odkaz-ikona btn-trailer">▶ Trailer</a>
+                                                <a href="${csfdUrl}" target="_blank" rel="noopener" class="btn-odkaz-ikona">ČSFD ↗</a>
+                                            </div>
+                                        </td>
+                                    `;
+                                }).join("")}
                             </tr>
                         </tbody>
                     </table>
@@ -831,11 +1142,68 @@
             modalEl.classList.remove("skryty");
         }
 
+        // Náhodný výběr filmu na večer
+        function losujNahodnyFilm() {
+            let kandidati = ziskejFiltrovaneFilmy();
+            if (kandidati.length === 0) {
+                kandidati = filmyData;
+            }
+            if (kandidati.length === 0) return;
+
+            const nahodny = kandidati[Math.floor(Math.random() * kandidati.length)];
+            const tridaBarvy = ziskejTriduCsfd(nahodny.hodnoceni);
+            const trailerUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(nahodny.nazev + " " + nahodny.rok + " trailer cz")}`;
+            const csfdUrl = `https://www.csfd.cz/hledat/?q=${encodeURIComponent(nahodny.nazev)}`;
+
+            document.getElementById("nahodny-film-obsah").innerHTML = `
+                <div class="nahodny-karta">
+                    <div class="nahodny-horni">
+                        <span class="nahodny-ikona">${nahodny.ikona || "🎬"}</span>
+                        <span class="csfd-odznak-tabulka ${tridaBarvy}">${nahodny.hodnoceni} %</span>
+                    </div>
+                    <h3>${escapeHtml(nahodny.nazev)} (${nahodny.rok})</h3>
+                    <p class="film-meta">${escapeHtml(nahodny.zanry.join(", "))} • Režie: ${escapeHtml(nahodny.reziser)} • ${nahodny.delka} min</p>
+                    <p class="nahodny-popis">${escapeHtml(nahodny.popis)}</p>
+                    <div class="nahodny-tlacitka">
+                        <a href="${trailerUrl}" target="_blank" rel="noopener" class="btn-odkaz-ikona btn-trailer">▶ Pustit trailer</a>
+                        <a href="${csfdUrl}" target="_blank" rel="noopener" class="btn-odkaz-ikona">Otevřít na ČSFD ↗</a>
+                        <button type="button" onclick="losujNahodnyFilm()" class="tlacitko-primarni">🎲 Zkusit jiný</button>
+                    </div>
+                </div>
+            `;
+            nahodnyModalEl.classList.remove("skryty");
+        }
+
+        // Přidání a úprava filmu
         function otevritPridatSpredvyplnenim() {
+            document.getElementById("form-pridat-film").reset();
+            document.getElementById("edit-film-id").value = "";
+            document.getElementById("form-modal-nadpis").textContent = "Přidat film z ČSFD";
+            document.getElementById("form-modal-podnadpis").textContent = "Film se uloží do tvého žebříčku v prohlížeči";
             document.getElementById("novy-nazev").value = hledanyText;
             pridatModalEl.classList.remove("skryty");
         }
 
+        function otevritUpravuFilmu(id) {
+            const film = filmyData.find(f => f.id === id);
+            if (!film) return;
+
+            document.getElementById("edit-film-id").value = film.id;
+            document.getElementById("form-modal-nadpis").textContent = "Upravit film";
+            document.getElementById("form-modal-podnadpis").textContent = "Uprav údaje, procenta nebo odkaz na plakát";
+            document.getElementById("novy-nazev").value = film.nazev;
+            document.getElementById("nove-hodnoceni").value = film.hodnoceni;
+            document.getElementById("novy-rok").value = film.rok;
+            document.getElementById("novy-zanr").value = film.zanry[0] || "Drama";
+            document.getElementById("nova-delka").value = film.delka;
+            document.getElementById("novy-reziser").value = film.reziser;
+            document.getElementById("novy-plakat").value = film.plakat || "";
+            document.getElementById("novy-popis").value = film.popis;
+
+            pridatModalEl.classList.remove("skryty");
+        }
+
+        // Události filtrů
         document.querySelectorAll(".zanr-btn").forEach(btn => {
             btn.addEventListener("click", () => {
                 document.querySelectorAll(".zanr-btn").forEach(b => b.classList.remove("aktivni"));
@@ -843,6 +1211,18 @@
                 aktivniZanr = btn.dataset.zanr;
                 vykresliFilmy();
             });
+        });
+
+        document.getElementById("btn-filtr-watchlist").addEventListener("click", (e) => {
+            jenWatchlist = !jenWatchlist;
+            e.currentTarget.classList.toggle("aktivni", jenWatchlist);
+            vykresliFilmy();
+        });
+
+        document.getElementById("btn-filtr-ohodnocene").addEventListener("click", (e) => {
+            jenOhodnocene = !jenOhodnocene;
+            e.currentTarget.classList.toggle("aktivni", jenOhodnocene);
+            vykresliFilmy();
         });
 
         document.getElementById("hledat-input").addEventListener("input", (e) => {
@@ -855,6 +1235,7 @@
             vykresliFilmy();
         });
 
+        // Ovládání srovnávání a náhodného filmu
         document.getElementById("btn-otevrit-srovnani").addEventListener("click", otevritSrovnani);
         document.getElementById("btn-vymazat-vyber").addEventListener("click", () => {
             vybraneProSrovnani = [];
@@ -867,6 +1248,12 @@
             if (e.target === modalEl) modalEl.classList.add("skryty");
         });
 
+        document.getElementById("btn-nahodny-film").addEventListener("click", losujNahodnyFilm);
+        document.getElementById("btn-zavrit-nahodny").addEventListener("click", () => nahodnyModalEl.classList.add("skryty"));
+        nahodnyModalEl.addEventListener("click", (e) => {
+            if (e.target === nahodnyModalEl) nahodnyModalEl.classList.add("skryty");
+        });
+
         document.getElementById("btn-rychle-srovnani").addEventListener("click", () => {
             const serazene = [...filmyData].sort((a, b) => b.hodnoceni - a.hodnoceni);
             if (serazene.length >= 2) {
@@ -877,8 +1264,12 @@
             }
         });
 
+        // Ovládání formuláře přidání / úpravy
         document.getElementById("btn-otevrit-pridat").addEventListener("click", () => {
             document.getElementById("form-pridat-film").reset();
+            document.getElementById("edit-film-id").value = "";
+            document.getElementById("form-modal-nadpis").textContent = "Přidat film z ČSFD";
+            document.getElementById("form-modal-podnadpis").textContent = "Film se uloží do tvého žebříčku v prohlížeči";
             pridatModalEl.classList.remove("skryty");
         });
 
@@ -889,30 +1280,57 @@
 
         document.getElementById("form-pridat-film").addEventListener("submit", (e) => {
             e.preventDefault();
-            const novyFilm = {
-                id: Date.now(),
-                nazev: document.getElementById("novy-nazev").value.trim(),
-                hodnoceni: Number(document.getElementById("nove-hodnoceni").value),
-                rok: Number(document.getElementById("novy-rok").value),
-                zanry: [document.getElementById("novy-zanr").value],
-                delka: Number(document.getElementById("nova-delka").value),
-                reziser: document.getElementById("novy-reziser").value.trim() || "Neuvedeno",
-                popis: document.getElementById("novy-popis").value.trim() || "Vlastní film přidaný z databáze ČSFD.",
-                silnaStranka: document.getElementById("novy-popis").value.trim() || "Přidáno uživatelem",
-                ikona: "🎞️"
-            };
+            const editId = document.getElementById("edit-film-id").value;
+            const zadanyZanr = document.getElementById("novy-zanr").value;
+            const zadanyPopis = document.getElementById("novy-popis").value.trim();
 
-            filmyData.unshift(novyFilm);
+            if (editId) {
+                const existujici = filmyData.find(f => f.id === Number(editId));
+                if (existujici) {
+                    existujici.nazev = document.getElementById("novy-nazev").value.trim();
+                    existujici.hodnoceni = Number(document.getElementById("nove-hodnoceni").value);
+                    existujici.rok = Number(document.getElementById("novy-rok").value);
+                    if (!existujici.zanry.includes(zadanyZanr)) {
+                        existujici.zanry = [zadanyZanr, ...existujici.zanry];
+                    } else {
+                        existujici.zanry = [zadanyZanr, ...existujici.zanry.filter(z => z !== zadanyZanr)];
+                    }
+                    existujici.delka = Number(document.getElementById("nova-delka").value);
+                    existujici.reziser = document.getElementById("novy-reziser").value.trim() || "Neuvedeno";
+                    existujici.plakat = document.getElementById("novy-plakat").value.trim();
+                    existujici.popis = zadanyPopis || existujici.popis;
+                    existujici.silnaStranka = zadanyPopis || existujici.silnaStranka;
+                }
+            } else {
+                const novyFilm = {
+                    id: Date.now(),
+                    nazev: document.getElementById("novy-nazev").value.trim(),
+                    hodnoceni: Number(document.getElementById("nove-hodnoceni").value),
+                    rok: Number(document.getElementById("novy-rok").value),
+                    zanry: [zadanyZanr],
+                    delka: Number(document.getElementById("nova-delka").value),
+                    reziser: document.getElementById("novy-reziser").value.trim() || "Neuvedeno",
+                    plakat: document.getElementById("novy-plakat").value.trim(),
+                    popis: zadanyPopis || "Vlastní film přidaný z databáze ČSFD.",
+                    silnaStranka: zadanyPopis || "Přidáno uživatelem",
+                    ikona: "🎞️",
+                    chciVidet: false,
+                    mojeHodnoceni: 0
+                };
+                filmyData.unshift(novyFilm);
+                hledanyText = "";
+                document.getElementById("hledat-input").value = "";
+            }
+
             ulozData();
-            hledanyText = "";
-            document.getElementById("hledat-input").value = "";
+            aktualizujDock();
             pridatModalEl.classList.add("skryty");
             vykresliFilmy();
         });
 
         document.getElementById("btn-reset-dat").addEventListener("click", () => {
             if (confirm("Opravdu chceš obnovit původní seznam 36 filmů?")) {
-                filmyData = [...vychoziFilmy];
+                filmyData = JSON.parse(JSON.stringify(vychoziFilmy));
                 vybraneProSrovnani = [];
                 ulozData();
                 aktualizujDock();
