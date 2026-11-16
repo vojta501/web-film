@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CinePulse ČSFD | Žebříček a srovnávač filmů</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styly.css">
+</head>
+<body>
+
+    <!-- Navigace -->
+    <header class="hlavicka">
+        <div class="kontejner navigace">
+            <a href="#" class="logo">
+                <span class="logo-ikona">▶</span>
+                <span>Cine<strong>Pulse</strong> <span class="logo-csfd">ČSFD</span></span>
+            </a>
+            <div class="nav-akce">
+                <button id="btn-otevrit-pridat" class="tlacitko-pridat">
+                    + Přidat film z ČSFD
+                </button>
+                <button id="btn-rychle-srovnani" class="tlacitko-obrys">
+                    ⚡ Porovnat TOP 2
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Úvodní sekce -->
+    <section class="hero">
+        <div class="hero-zare"></div>
+        <div class="kontejner hero-obsah">
+            <span class="stitek-novinka">Žebříček podle procent & barev ČSFD</span>
+            <h1>Srovnávej filmy podle <span class="text-gradient">hodnocení ČSFD</span></h1>
+            <p>Filtruj podle žánrů, řaď filmy podle procent a postav až 3 snímky vedle sebe. Chybí ti tu nějaký film? Přidej si ho jedním kliknutím.</p>
+            
+            <!-- Vyhledávání a řazení -->
+            <div class="ovladaci-panel">
+                <div class="vyhledavani-box">
+                    <span class="ikona-hledat">🔍</span>
+                    <input type="text" id="hledat-input" placeholder="Hledat film, režiséra nebo rok...">
+                </div>
+                <select id="razeni-select" aria-label="Řazení filmů">
+                    <option value="hodnoceni-desc">Nejvyšší % na ČSFD</option>
+                    <option value="hodnoceni-asc">Nejnižší % na ČSFD</option>
+                    <option value="rok-desc">Nejnovější filmy</option>
+                    <option value="delka-asc">Nejkratší stopáž</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hlavní obsah -->
+    <main class="kontejner hlavni-sekce">
+        
+        <!-- Filtry žánrů -->
+        <div class="zanry-lista" id="zanry-filtry">
+            <button class="zanr-btn aktivni" data-zanr="Vše">Všechny žánry</button>
+            <button class="zanr-btn" data-zanr="Drama">Drama</button>
+            <button class="zanr-btn" data-zanr="Komedie">Komedie</button>
+            <button class="zanr-btn" data-zanr="Sci-Fi">Sci-Fi</button>
+            <button class="zanr-btn" data-zanr="Akční">Akční</button>
+            <button class="zanr-btn" data-zanr="Krimi">Krimi</button>
+            <button class="zanr-btn" data-zanr="Fantasy">Fantasy</button>
+            <button class="zanr-btn" data-zanr="Animovaný">Animovaný</button>
+        </div>
+
+        <!-- Stavový řádek -->
+        <div class="vysledky-info">
+            <span id="pocet-filmu">Zobrazeno 36 filmů</span>
+            <div class="info-prava-strana">
+                <span class="legenda-csfd">
+                    <i class="tecka cervena"></i> 70 %+
+                    <i class="tecka modra"></i> 30–69 %
+                    <i class="tecka cerna"></i> pod 30 %
+                </span>
+            </div>
+        </div>
+
+        <!-- Mřížka filmů -->
+        <div class="filmy-mrizka" id="filmy-kontejner"></div>
+    </main>
+
+    <!-- Plovoucí lišta pro srovnání -->
+    <div class="srovnani-dock skryty" id="srovnani-dock">
+        <div class="dock-obsah">
+            <div class="dock-vybrane" id="dock-seznam"></div>
+            <div class="dock-tlacitka">
+                <button id="btn-vymazat-vyber" class="tlacitko-text">Zrušit</button>
+                <button id="btn-otevrit-srovnani" class="tlacitko-primarni">
+                    Porovnat (<span id="pocet-vybranych">0</span>/3)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modální okno se srovnáním -->
+    <div class="modal-pozadi skryty" id="srovnani-modal">
+        <div class="modal-okno">
+            <div class="modal-hlavicka">
+                <div>
+                    <h2>Srovnání filmů (ČSFD)</h2>
+                    <p>Porovnání procentuálního hodnocení, stopáže a parametrů</p>
+                </div>
+                <button id="btn-zavrit-modal" class="zavrit-btn" aria-label="Zavřít">×</button>
+            </div>
+            <div class="modal-telo" id="srovnani-tabulka-obal"></div>
+        </div>
+    </div>
+
+    <!-- Modální okno pro přidání vlastního filmu -->
+    <div class="modal-pozadi skryty" id="pridat-modal">
+        <div class="modal-okno modal-uzky">
+            <div class="modal-hlavicka">
+                <div>
+                    <h2>Přidat film z ČSFD</h2>
+                    <p>Film se uloží do tvého žebříčku v prohlížeči</p>
+                </div>
+                <button id="btn-zavrit-pridat" class="zavrit-btn" aria-label="Zavřít">×</button>
+            </div>
+            <form id="form-pridat-film" class="modal-telo formular-film">
+                <div class="pole-skupina">
+                    <label for="novy-nazev">Název filmu *</label>
+                    <input type="text" id="novy-nazev" required placeholder="Např. Pupendo">
+                </div>
+                <div class="pole-dvojice">
+                    <div class="pole-skupina">
+                        <label for="nove-hodnoceni">Hodnocení ČSFD (%) *</label>
+                        <input type="number" id="nove-hodnoceni" min="0" max="100" required placeholder="Např. 81">
+                    </div>
+                    <div class="pole-skupina">
+                        <label for="novy-rok">Rok vydání *</label>
+                        <input type="number" id="novy-rok" min="1900" max="2030" required placeholder="2003">
+                    </div>
+                </div>
+                <div class="pole-dvojice">
+                    <div class="pole-skupina">
+                        <label for="novy-zanr">Hlavní žánr *</label>
+                        <select id="novy-zanr">
+                            <option value="Drama">Drama</option>
+                            <option value="Komedie">Komedie</option>
+                            <option value="Sci-Fi">Sci-Fi</option>
+                            <option value="Akční">Akční</option>
+                            <option value="Krimi">Krimi</option>
+                            <option value="Fantasy">Fantasy</option>
+                            <option value="Animovaný">Animovaný</option>
+                        </select>
+                    </div>
+                    <div class="pole-skupina">
+                        <label for="nova-delka">Délka (minuty) *</label>
+                        <input type="number" id="nova-delka" min="1" max="500" required placeholder="120">
+                    </div>
+                </div>
+                <div class="pole-skupina">
+                    <label for="novy-reziser">Režisér</label>
+                    <input type="text" id="novy-reziser" placeholder="Např. Jan Hřebejk">
+                </div>
+                <div class="pole-skupina">
+                    <label for="novy-popis">Krátký popis nebo hlavní přednost</label>
+                    <input type="text" id="novy-popis" placeholder="Česká hořkosladká komedie">
+                </div>
+                <div class="form-akce">
+                    <button type="button" id="btn-reset-dat" class="tlacitko-text" title="Obnoví původní seznam">Obnovit výchozí</button>
+                    <button type="submit" class="tlacitko-primarni">Uložit do žebříčku</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="paticka">
+        <div class="kontejner">
+            <p>© 2026 CinePulse ČSFD • Vlastní filmový srovnávač</p>
+        </div>
+    </footer>
+
+    <script>
+        const vychoziFilmy = [
+            {
+                id: 1,
+                nazev: "Vykoupení z věznice Shawshank",
+                rok: 1994,
+                zanry: ["Drama", "Krimi"],
+                hodnoceni: 95,
+                delka: 142,
+                reziser: "Frank Darabont",
+                silnaStranka: "Nejlépe hodnocený film na ČSFD všech dob",
+                popis: "Mladý bankéř Andy Dufresne je neprávem odsouzen za vraždu a ve věznici Shawshank si postupně získává respekt i přátelství.",
+                ikona: "🏛️"
+            },
+            {
+                id: 2,
+                nazev: "Forrest Gump",
+                rok: 1994,
+                zanry: ["Drama", "Komedie"],
+                hodnoceni: 94,
+                delka: 142,
+                reziser: "Robert Zemeckis",
+                silnaStranka: "Dokonalé propojení humoru, emocí a amerických dějin",
+                popis: "Dobrosrdečný Forrest s nízkým IQ se díky své upřímnosti a vytrvalosti stane svědkem i aktérem klíčových událostí 20. století.",
+                ikona: "🏃"
+            },
+            {
+                id: 3,
+                nazev: "Zelená míle",
+                rok: 1999,
+                zanry: ["Drama", "Fantasy"],
+                hodnoceni: 93,
+                delka: 188,
+                reziser: "Frank Darabont",
+                silnaStranka: "Silný lidský příběh a nezapomenutelný výkon M. C. Duncana",
+                popis: "Dozorce v cele smrti zjistí, že obrovitý vězeň odsouzený za brutální vraždu vládne zázračným léčitelským darem.",
+                ikona: "✨"
+            },
+            {
+                id: 4,
+                nazev: "Sedm",
+                rok: 1995,
+                zanry: ["Krimi", "Drama"],
+                hodnoceni: 92,
+                delka: 127,
+                reziser: "David Fincher",
+                silnaStranka: "Temná deštivá atmosféra a šokující závěr",
+                popis: "Dva detektivové pátrají po sériovém vrahovi, který své oběti trestá podle sedmi smrtelných hříchů.",
+                ikona: "🌧️"
+            },
+            {
+                id: 5,
+                nazev: "Přelet nad kukaččím hnízdem",
+                rok: 1975,
+                zanry: ["Drama"],
+                hodnoceni: 92,
+                delka: 133,
+                reziser: "Miloš Forman",
+                silnaStranka: "Legendární režie Miloše Formana a výkon Jacka Nicholsona",
+                popis: "Svobodomyslný buřič McMurphy se nechá zavřít do psychiatrické léčebny, kde narazí na nekompromisní sestru Ratchedovou.",
+                ikona: "🕊️"
+            },
+            {
+                id: 6,
+                nazev: "Schindlerův seznam",
+                rok: 1993,
+                zanry: ["Drama"],
+                hodnoceni: 92,
+                delka: 195,
+                reziser: "Steven Spielberg",
+                silnaStranka: "Mrazivé černobílé zpracování skutečného příběhu",
+                popis: "Německý obchodník Oskar Schindler zachrání během druhé světové války více než tisícovku polských Židů.",
+                ikona: "🕯️"
+            },
+            {
+                id: 7,
+                nazev: "Pelíšky",
+                rok: 1999,
+                zanry: ["Komedie", "Drama"],
+                hodnoceni: 91,
+                delka: 116,
+                reziser: "Jan Hřebejk",
+                silnaStranka: "Nejslavnější české filmové hlášky a vánoční atmosféra",
+                popis: "Hořkosladká komedie o generačních střetech dvou sousedských rodin na sklonku šedesátých let v Praze.",
+                ikona: "🥄"
+            },
+            {
+                id: 8,
+                nazev: "Pán prstenů: Návrat krále",
+                rok: 2003,
+                zanry: ["Fantasy", "Akční"],
+                hodnoceni: 91,
+                delka: 201,
+                reziser: "Peter Jackson",
+                silnaStranka: "Epické vyvrcholení trilogie oceněné 11 Oscary",
+                popis: "Frodo se Samem se blíží k Hoře osudu, zatímco Aragorn vede poslední bitvu o záchranu Středozemě.",
+                ikona: "👑"
+            },
+            {
+                id: 9,
+                nazev: "Pán prstenů: Společenstvo Prstenu",
+                rok: 2001,
+                zanry: ["Fantasy", "Akční"],
+                hodnoceni: 91,
+                delka: 178,
+                reziser: "Peter Jackson",
+                silnaStranka: "Dechberoucí novozélandská příroda a výprava",
+                popis: "Mladý hobit Frodo Pytlík se vydává na nebezpečnou pouť napříč Středozemí, aby zničil Jeden prsten moci.",
+                ikona: "💍"
+            },
+            {
+                id: 10,
+                nazev: "Kmotr",
+                rok: 1972,
+                zanry: ["Krimi", "Drama"],
+                hodnoceni: 91,
+                delka: 175,
+                reziser: "Francis Ford Coppola",
+                silnaStranka: "Základní kámen mafiánských filmů",
+                popis: "Příběh mocné newyorské mafiánské rodiny Corleonových a proměny nejmladšího syna Michaela.",
+                ikona: "🌹"
+            },
+            {
+                id: 11,
+                nazev: "Nedotknutelní",
+                rok: 2011,
+                zanry: ["Komedie", "Drama"],
+                hodnoceni: 91,
+                delka: 112,
+                reziser: "Olivier Nakache",
+                silnaStranka: "Nakažlivý optimismus a skvělá chemie hlavní dvojice",
+                popis: "Ochrnutý bohatý aristokrat si najme jako ošetřovatele živelného mladíka z pařížského předměstí.",
+                ikona: "🤝"
+            },
+            {
+                id: 12,
+                nazev: "Temný rytíř",
+                rok: 2008,
+                zanry: ["Akční", "Krimi", "Drama"],
+                hodnoceni: 90,
+                delka: 152,
+                reziser: "Christopher Nolan",
+                silnaStranka: "Legendární Joker Heatha Ledgera a strhující tempo",
+                popis: "Batman čelí v Gothamu nevyzpytatelnému zločinci Jokerovi, který chce město uvrhnout do naprostého chaosu.",
+                ikona: "🦇"
+            },
+            {
+                id: 13,
+                nazev: "Matrix",
+                rok: 1999,
+                zanry: ["Sci-Fi", "Akční"],
+                hodnoceni: 90,
+                delka: 136,
+                reziser: "Lana a Lilly Wachowski",
+                silnaStranka: "Revoluční akční scény a nadčasová myšlenka",
+                popis: "Hacker Neo odhalí šokující pravdu: svět, ve kterém žije, je jen počítačová simulace ovládaná stroji.",
+                ikona: "🕶️"
+            },
+            {
+                id: 14,
+                nazev: "Pulp Fiction: Historky z podsvětí",
+                rok: 1994,
+                zanry: ["Krimi", "Drama"],
+                hodnoceni: 90,
+                delka: 154,
+                reziser: "Quentin Tarantino",
+                silnaStranka: "Kultovní dialogy a propletené časové roviny",
+                popis: "Tři zdánlivě nesouvisející příběhy gangsterů, boxera a zlodějů v Los Angeles se nečekaně protnou.",
+                ikona: "💼"
+            },
+            {
+                id: 15,
+                nazev: "Duna: Část druhá",
+                rok: 2024,
+                zanry: ["Sci-Fi", "Drama"],
+                hodnoceni: 89,
+                delka: 166,
+                reziser: "Denis Villeneuve",
+                silnaStranka: "Monumentální audiovizuální zážitek",
+                popis: "Paul Atreides se po boku Fremenů vydává na cestu pomsty proti spiklencům, kteří zničili jeho rodinu.",
+                ikona: "🏜️"
+            },
+            {
+                id: 16,
+                nazev: "Interstellar",
+                rok: 2014,
+                zanry: ["Sci-Fi", "Drama"],
+                hodnoceni: 89,
+                delka: 169,
+                reziser: "Christopher Nolan",
+                silnaStranka: "Hudba Hanse Zimmera a pouto mezi otcem a dcerou",
+                popis: "Tým astronautů cestuje červí dírou do jiné galaxie, aby našel obyvatelnou planetu pro umírající lidstvo.",
+                ikona: "🚀"
+            },
+            {
+                id: 17,
+                nazev: "Počátek (Inception)",
+                rok: 2010,
+                zanry: ["Sci-Fi", "Akční"],
+                hodnoceni: 89,
+                delka: 148,
+                reziser: "Christopher Nolan",
+                silnaStranka: "Promyšlená architektura snů v několika úrovních",
+                popis: "Zloděj tajemství z podvědomí dostane opačný úkol: vložit do mysli dědice impéria zcela novou myšlenku.",
+                ikona: "🌀"
+            },
+            {
+                id: 18,
+                nazev: "V hlavě",
+                rok: 2015,
+                zanry: ["Animovaný", "Komedie"],
+                hodnoceni: 88,
+                delka: 95,
+                reziser: "Pete Docter",
+                silnaStranka: "Chytrý nápad ztvárnit lidské emoce jako postavičky",
+                popis: "Radost, Smutek, Vztek, Strach a Nechuť řídí z řídicího centra mysl jedenáctileté Riley po stěhování.",
+                ikona: "🧠"
+            },
+            {
+                id: 19,
+                nazev: "Spider-Man: Napříč paralelními světy",
+                rok: 2023,
+                zanry: ["Animovaný", "Akční", "Sci-Fi"],
+                hodnoceni: 88,
+                delka: 140,
+                reziser: "Joaquim Dos Santos",
+                silnaStranka: "Unikátní animace propojující desítky výtvarných stylů",
+                popis: "Miles Morales se dostává do střetu s elitní společností Spider-Manů napříč mnohovesmírem.",
+                ikona: "🕸️"
+            },
+            {
+                id: 20,
+                nazev: "Gladiátor",
+                rok: 2000,
+                zanry: ["Akční", "Drama"],
+                hodnoceni: 88,
+                delka: 155,
+                reziser: "Ridley Scott",
+                silnaStranka: "Velkolepé souboje v Koloseu a charismatický Russell Crowe",
+                popis: "Zrazený římský generál Maximus se vrací do Říma jako gladiátor, aby pomstil vyvraždění své rodiny.",
+                ikona: "⚔️"
+            },
+            {
+                id: 21,
+                nazev: "Shrek",
+                rok: 2001,
+                zanry: ["Animovaný", "Komedie", "Fantasy"],
+                hodnoceni: 88,
+                delka: 90,
+                reziser: "Andrew Adamson",
+                silnaStranka: "Skvělá parodie na klasické pohádky i perfektní dabing",
+                popis: "Zelený zlobr Shrek se vydává s upovídaným Oslíkem zachránit princeznu Fionu, aby získal zpět svůj klid v bažině.",
+                ikona: "🧅"
+            },
+            {
+                id: 22,
+                nazev: "Obecná škola",
+                rok: 1991,
+                zanry: ["Komedie", "Drama"],
+                hodnoceni: 88,
+                delka: 101,
+                reziser: "Jan Svěrák",
+                silnaStranka: "Laskavý humor Zdeňka Svěráka a nezapomenutelný Igor Hnízdo",
+                popis: "Do poválečné třídy plné rošťáků nastupuje přísný učitel Igor Hnízdo, který si rychle zjedná respekt.",
+                ikona: "🏫"
+            },
+            {
+                id: 23,
+                nazev: "Terminátor 2: Den zúčtování",
+                rok: 1991,
+                zanry: ["Akční", "Sci-Fi"],
+                hodnoceni: 88,
+                delka: 137,
+                reziser: "James Cameron",
+                silnaStranka: "Jeden z nejlepších akčních filmů všech dob",
+                popis: "Přeprogramovaný kyborg T-800 chrání mladého Johna Connora před téměř nezničitelným terminátorem z tekutého kovu.",
+                ikona: "🤖"
+            },
+            {
+                id: 24,
+                nazev: "Návrat do budoucnosti",
+                rok: 1985,
+                zanry: ["Sci-Fi", "Komedie"],
+                hodnoceni: 88,
+                delka: 116,
+                reziser: "Robert Zemeckis",
+                silnaStranka: "Hravé cestování časem ve voze DeLorean",
+                popis: "Marty McFly se omylem přenese v čase o 30 let zpět a musí zajistit, aby se jeho budoucí rodiče do sebe zamilovali.",
+                ikona: "⚡"
+            },
+            {
+                id: 25,
+                nazev: "Coco",
+                rok: 2017,
+                zanry: ["Animovaný", "Fantasy"],
+                hodnoceni: 87,
+                delka: 105,
+                reziser: "Lee Unkrich",
+                silnaStranka: "Barevný svět mexického svátku mrtvých a dojemný příběh",
+                popis: "Mladý hudebník Miguel se ocitne v říši mrtvých, kde hledá svého slavného prapradědečka.",
+                ikona: "🎸"
+            },
+            {
+                id: 26,
+                nazev: "Marečku, podejte mi pero!",
+                rok: 1976,
+                zanry: ["Komedie"],
+                hodnoceni: 86,
+                delka: 96,
+                reziser: "Oldřich Lipský",
+                silnaStranka: "Nesmrtelné hlášky z večerní školy",
+                popis: "Dospělí zaměstnanci továrny usedají znovu do školních lavic, aby si doplnili maturitu.",
+                ikona: "✒️"
+            },
+            {
+                id: 27,
+                nazev: "Samotáři",
+                rok: 2000,
+                zanry: ["Komedie", "Drama"],
+                hodnoceni: 85,
+                delka: 103,
+                reziser: "David Ondříček",
+                silnaStranka: "Generační výpověď z přelomu tisíciletí",
+                popis: "Osudy několika mladých lidí v Praze se během pár dnů bláznivě zamotají.",
+                ikona: "🎧"
+            },
+            {
+                id: 28,
+                nazev: "Jurský park",
+                rok: 1993,
+                zanry: ["Sci-Fi", "Akční"],
+                hodnoceni: 85,
+                delka: 127,
+                reziser: "Steven Spielberg",
+                silnaStranka: "Dinosauři, kteří vypadají skvěle i po více než 30 letech",
+                popis: "Návštěva ostrovního zábavního parku s naklonovanými dinosaury se změní v boj o holý život.",
+                ikona: "🦖"
+            },
+            {
+                id: 29,
+                nazev: "Oppenheimer",
+                rok: 2023,
+                zanry: ["Drama"],
+                hodnoceni: 85,
+                delka: 180,
+                reziser: "Christopher Nolan",
+                silnaStranka: "Strhující střih a mimořádné herecké výkony",
+                popis: "Životní příběh fyzika J. Roberta Oppenheimera a vzniku první atomové bomby.",
+                ikona: "⚛️"
+            },
+            {
+                id: 30,
+                nazev: "Avengers: Endgame",
+                rok: 2019,
+                zanry: ["Akční", "Sci-Fi"],
+                hodnoceni: 84,
+                delka: 181,
+                reziser: "Anthony a Joe Russo",
+                silnaStranka: "Velkolepé završení desetileté ságy Marvelu",
+                popis: "Zbývající hrdinové se pokusí zvrátit Thanosův čin a zachránit polovinu vesmíru.",
+                ikona: "🛡️"
+            },
+            {
+                id: 31,
+                nazev: "Jak vycvičit draka",
+                rok: 2010,
+                zanry: ["Animovaný", "Fantasy"],
+                hodnoceni: 84,
+                delka: 98,
+                reziser: "Dean DeBlois",
+                silnaStranka: "Přátelství Škyťáka a Bezzubky i skvělá hudba",
+                popis: "Mladý viking se místo zabití draka se vzácným Nočním běsem spřátelí a změní osud celé vesnice.",
+                ikona: "🐉"
+            },
+            {
+                id: 32,
+                nazev: "Harry Potter a Vězeň z Azkabanu",
+                rok: 2004,
+                zanry: ["Fantasy"],
+                hodnoceni: 84,
+                delka: 141,
+                reziser: "Alfonso Cuarón",
+                silnaStranka: "Nejtemnější a režijně nejzajímavější díl celé série",
+                popis: "Z kouzelnického vězení Azkaban uprchl nebezpečný Sirius Black a míří do Bradavic.",
+                ikona: "⚡"
+            },
+            {
+                id: 33,
+                nazev: "Piráti z Karibiku: Prokletí Černé perly",
+                rok: 2003,
+                zanry: ["Akční", "Fantasy", "Komedie"],
+                hodnoceni: 84,
+                delka: 143,
+                reziser: "Gore Verbinski",
+                silnaStranka: "Nezaměnitelný kapitán Jack Sparrow",
+                popis: "Kovář Will Turner spojí síly s výstředním pirátem Jackem Sparrowem, aby zachránil unesenou Elizabeth.",
+                ikona: "🏴‍☠️"
+            },
+            {
+                id: 34,
+                nazev: "Avatar",
+                rok: 2009,
+                zanry: ["Sci-Fi", "Akční", "Fantasy"],
+                hodnoceni: 83,
+                delka: 162,
+                reziser: "James Cameron",
+                silnaStranka: "Svět měsíce Pandora propracovaný do posledního detailu",
+                popis: "Bývalý mariňák Jake Sully se v těle avatara sblíží s domorodým kmenem Na'vi.",
+                ikona: "🌿"
+            },
+            {
+                id: 35,
+                nazev: "Venom 2: Carnage přichází",
+                rok: 2021,
+                zanry: ["Akční", "Sci-Fi"],
+                hodnoceni: 57,
+                delka: 97,
+                reziser: "Andy Serkis",
+                silnaStranka: "Svižná stopáž a hašteření mezi Eddiem a Venomem",
+                popis: "Eddie Brock se snaží sžít se svým mimozemským symbiontem, zatímco z vězení uniká nebezpečný Carnage.",
+                ikona: "🕷️"
+            },
+            {
+                id: 36,
+                nazev: "Kameňák",
+                rok: 2003,
+                zanry: ["Komedie"],
+                hodnoceni: 24,
+                delka: 96,
+                reziser: "Zdeněk Troška",
+                silnaStranka: "Série lidových anekdot z fiktivního městečka Kameňákov",
+                popis: "Filmová mozaika poskládaná ze známých českých vtipů o policajtech, doktorech a manželství.",
+                ikona: "🪨"
+            }
+        ];
+
+        // Klíč v2 zajistí okamžité načtení nového rozšířeného seznamu filmů
+        let filmyData = JSON.parse(localStorage.getItem("cinepulse_csfd_filmy_v2")) || [...vychoziFilmy];
+
+        let aktivniZanr = "Vše";
+        let hledanyText = "";
+        let razeni = "hodnoceni-desc";
+        let vybraneProSrovnani = [];
+
+        const filmyKontejner = document.getElementById("filmy-kontejner");
+        const pocetFilmuEl = document.getElementById("pocet-filmu");
+        const dockEl = document.getElementById("srovnani-dock");
+        const dockSeznamEl = document.getElementById("dock-seznam");
+        const pocetVybranychEl = document.getElementById("pocet-vybranych");
+        const modalEl = document.getElementById("srovnani-modal");
+        const srovnaniTabulkaObal = document.getElementById("srovnani-tabulka-obal");
+        const pridatModalEl = document.getElementById("pridat-modal");
+
+        function ziskejTriduCsfd(procenta) {
+            if (procenta >= 70) return "csfd-cervena";
+            if (procenta >= 30) return "csfd-modra";
+            return "csfd-cerna";
+        }
+
+        function ulozData() {
+            localStorage.setItem("cinepulse_csfd_filmy_v2", JSON.stringify(filmyData));
+        }
+
+        function vykresliFilmy() {
+            const dotaz = hledanyText.toLowerCase().trim();
+
+            let filtrovane = filmyData.filter(film => {
+                const shodaZanr = aktivniZanr === "Vše" || film.zanry.includes(aktivniZanr);
+                const shodaText = film.nazev.toLowerCase().includes(dotaz) ||
+                                  film.reziser.toLowerCase().includes(dotaz) ||
+                                  String(film.rok).includes(dotaz);
+                return shodaZanr && shodaText;
+            });
+
+            filtrovane.sort((a, b) => {
+                if (razeni === "hodnoceni-desc") return b.hodnoceni - a.hodnoceni;
+                if (razeni === "hodnoceni-asc") return a.hodnoceni - b.hodnoceni;
+                if (razeni === "rok-desc") return b.rok - a.rok;
+                if (razeni === "delka-asc") return a.delka - b.delka;
+                return 0;
+            });
+
+            pocetFilmuEl.textContent = `Zobrazeno ${filtrovane.length} ${sklonujFilmy(filtrovane.length)}`;
+
+            if (filtrovane.length === 0) {
+                const csfdUrl = `https://www.csfd.cz/hledat/?q=${encodeURIComponent(hledanyText)}`;
+                filmyKontejner.innerHTML = `
+                    <div class="prazdny-stav">
+                        <h3>Film „${hledanyText || aktivniZanr}“ v seznamu zatím není</h3>
+                        <p>Můžeš si ho rovnou vyhledat na ČSFD a jedním kliknutím přidat do své databáze.</p>
+                        <div class="prazdny-akce">
+                            ${hledanyText ? `<a href="${csfdUrl}" target="_blank" rel="noopener" class="tlacitko-obrys">🔍 Najít na ČSFD.cz</a>` : ''}
+                            <button onclick="otevritPridatSpredvyplnenim()" class="tlacitko-primarni">+ Přidat film ručně</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            filmyKontejner.innerHTML = filtrovane.map((film, poradi) => {
+                const jeVybran = vybraneProSrovnani.includes(film.id);
+                const tridaBarvy = ziskejTriduCsfd(film.hodnoceni);
+                const csfdOdkaz = `https://www.csfd.cz/hledat/?q=${encodeURIComponent(film.nazev)}`;
+
+                return `
+                    <article class="film-karta ${jeVybran ? 'vybrana-karta' : ''}">
+                        <div class="film-hlavicka-karta ${tridaBarvy}-pozadi">
+                            <span class="poradi-odznak">#${poradi + 1}</span>
+                            <span class="plakat-ikona">${film.ikona || "🎬"}</span>
+                            <div class="csfd-odznak ${tridaBarvy}">
+                                ${film.hodnoceni} %
+                            </div>
+                        </div>
+
+                        <div class="film-obsah">
+                            <div class="zanr-stitky">
+                                <span class="stitek-rok">${film.rok}</span>
+                                ${film.zanry.map(z => `<span class="stitek-zanr">${z}</span>`).join("")}
+                            </div>
+
+                            <h3>${film.nazev}</h3>
+                            <p class="film-meta">Režie: <strong>${film.reziser}</strong> • ${film.delka} min</p>
+                            <p class="film-popis">${film.popis}</p>
+
+                            <div class="hodnoceni-ukazatel">
+                                <div class="progress-pozadi">
+                                    <div class="progress-vypln ${tridaBarvy}" style="width: ${film.hodnoceni}%"></div>
+                                </div>
+                            </div>
+
+                            <div class="karta-tlacitka">
+                                <button 
+                                    class="btn-porovnat ${jeVybran ? 'aktivni' : ''}" 
+                                    onclick="prepnoutSrovnani(${film.id})">
+                                    ${jeVybran ? '✓ Ve srovnání' : '+ Porovnat'}
+                                </button>
+                                <a href="${csfdOdkaz}" target="_blank" rel="noopener" class="btn-csfd-odkaz" title="Otevřít kartu filmu na ČSFD.cz">
+                                    ČSFD ↗
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join("");
+        }
+
+        function sklonujFilmy(pocet) {
+            if (pocet === 1) return "film";
+            if (pocet >= 2 && pocet <= 4) return "filmy";
+            return "filmů";
+        }
+
+        function prepnoutSrovnani(id) {
+            const index = vybraneProSrovnani.indexOf(id);
+            if (index > -1) {
+                vybraneProSrovnani.splice(index, 1);
+            } else {
+                if (vybraneProSrovnani.length >= 3) {
+                    alert("Můžeš porovnávat maximálně 3 filmy najednou.");
+                    return;
+                }
+                vybraneProSrovnani.push(id);
+            }
+            aktualizujDock();
+            vykresliFilmy();
+        }
+
+        function aktualizujDock() {
+            pocetVybranychEl.textContent = vybraneProSrovnani.length;
+
+            if (vybraneProSrovnani.length === 0) {
+                dockEl.classList.add("skryty");
+                return;
+            }
+
+            dockEl.classList.remove("skryty");
+            dockSeznamEl.innerHTML = vybraneProSrovnani.map(id => {
+                const film = filmyData.find(f => f.id === id);
+                if (!film) return "";
+                return `
+                    <span class="dock-pilulka">
+                        ${film.nazev} (${film.hodnoceni} %)
+                        <button onclick="prepnoutSrovnani(${film.id})" title="Odebrat">×</button>
+                    </span>
+                `;
+            }).join("");
+        }
+
+        function otevritSrovnani() {
+            if (vybraneProSrovnani.length < 2) {
+                alert("Vyber alespoň 2 filmy, aby bylo možné je porovnat.");
+                return;
+            }
+
+            const vybraneFilmy = vybraneProSrovnani
+                .map(id => filmyData.find(f => f.id === id))
+                .filter(Boolean);
+            const maxHodnoceni = Math.max(...vybraneFilmy.map(f => f.hodnoceni));
+
+            srovnaniTabulkaObal.innerHTML = `
+                <div class="tabulka-responzivni">
+                    <table class="srovnavaci-tabulka">
+                        <thead>
+                            <tr>
+                                <th>Parametr</th>
+                                ${vybraneFilmy.map(f => `
+                                    <th>
+                                        <div class="tabulka-hlavicka-film">
+                                            <span class="tabulka-ikona">${f.ikona || "🎬"}</span>
+                                            <span>${f.nazev}</span>
+                                            ${f.hodnoceni === maxHodnoceni ? '<span class="vitez-stitek">🏆 Vítěz hodnocení</span>' : ''}
+                                        </div>
+                                    </th>
+                                `).join("")}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Hodnocení ČSFD</strong></td>
+                                ${vybraneFilmy.map(f => `
+                                    <td>
+                                        <span class="csfd-odznak-tabulka ${ziskejTriduCsfd(f.hodnoceni)}">
+                                            ${f.hodnoceni} %
+                                        </span>
+                                    </td>
+                                `).join("")}
+                            </tr>
+                            <tr>
+                                <td><strong>Žánry</strong></td>
+                                ${vybraneFilmy.map(f => `<td>${f.zanry.join(", ")}</td>`).join("")}
+                            </tr>
+                            <tr>
+                                <td><strong>Rok vydání</strong></td>
+                                ${vybraneFilmy.map(f => `<td>${f.rok}</td>`).join("")}
+                            </tr>
+                            <tr>
+                                <td><strong>Stopáž</strong></td>
+                                ${vybraneFilmy.map(f => `<td>${f.delka} min</td>`).join("")}
+                            </tr>
+                            <tr>
+                                <td><strong>Režie</strong></td>
+                                ${vybraneFilmy.map(f => `<td>${f.reziser}</td>`).join("")}
+                            </tr>
+                            <tr>
+                                <td><strong>Hlavní přednost</strong></td>
+                                ${vybraneFilmy.map(f => `<td>${f.silnaStranka || f.popis}</td>`).join("")}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            modalEl.classList.remove("skryty");
+        }
+
+        function otevritPridatSpredvyplnenim() {
+            document.getElementById("novy-nazev").value = hledanyText;
+            pridatModalEl.classList.remove("skryty");
+        }
+
+        document.querySelectorAll(".zanr-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".zanr-btn").forEach(b => b.classList.remove("aktivni"));
+                btn.classList.add("aktivni");
+                aktivniZanr = btn.dataset.zanr;
+                vykresliFilmy();
+            });
+        });
+
+        document.getElementById("hledat-input").addEventListener("input", (e) => {
+            hledanyText = e.target.value;
+            vykresliFilmy();
+        });
+
+        document.getElementById("razeni-select").addEventListener("change", (e) => {
+            razeni = e.target.value;
+            vykresliFilmy();
+        });
+
+        document.getElementById("btn-otevrit-srovnani").addEventListener("click", otevritSrovnani);
+        document.getElementById("btn-vymazat-vyber").addEventListener("click", () => {
+            vybraneProSrovnani = [];
+            aktualizujDock();
+            vykresliFilmy();
+        });
+
+        document.getElementById("btn-zavrit-modal").addEventListener("click", () => modalEl.classList.add("skryty"));
+        modalEl.addEventListener("click", (e) => {
+            if (e.target === modalEl) modalEl.classList.add("skryty");
+        });
+
+        document.getElementById("btn-rychle-srovnani").addEventListener("click", () => {
+            const serazene = [...filmyData].sort((a, b) => b.hodnoceni - a.hodnoceni);
+            if (serazene.length >= 2) {
+                vybraneProSrovnani = [serazene[0].id, serazene[1].id];
+                aktualizujDock();
+                vykresliFilmy();
+                otevritSrovnani();
+            }
+        });
+
+        document.getElementById("btn-otevrit-pridat").addEventListener("click", () => {
+            document.getElementById("form-pridat-film").reset();
+            pridatModalEl.classList.remove("skryty");
+        });
+
+        document.getElementById("btn-zavrit-pridat").addEventListener("click", () => pridatModalEl.classList.add("skryty"));
+        pridatModalEl.addEventListener("click", (e) => {
+            if (e.target === pridatModalEl) pridatModalEl.classList.add("skryty");
+        });
+
+        document.getElementById("form-pridat-film").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const novyFilm = {
+                id: Date.now(),
+                nazev: document.getElementById("novy-nazev").value.trim(),
+                hodnoceni: Number(document.getElementById("nove-hodnoceni").value),
+                rok: Number(document.getElementById("novy-rok").value),
+                zanry: [document.getElementById("novy-zanr").value],
+                delka: Number(document.getElementById("nova-delka").value),
+                reziser: document.getElementById("novy-reziser").value.trim() || "Neuvedeno",
+                popis: document.getElementById("novy-popis").value.trim() || "Vlastní film přidaný z databáze ČSFD.",
+                silnaStranka: document.getElementById("novy-popis").value.trim() || "Přidáno uživatelem",
+                ikona: "🎞️"
+            };
+
+            filmyData.unshift(novyFilm);
+            ulozData();
+            hledanyText = "";
+            document.getElementById("hledat-input").value = "";
+            pridatModalEl.classList.add("skryty");
+            vykresliFilmy();
+        });
+
+        document.getElementById("btn-reset-dat").addEventListener("click", () => {
+            if (confirm("Opravdu chceš obnovit původní seznam 36 filmů?")) {
+                filmyData = [...vychoziFilmy];
+                vybraneProSrovnani = [];
+                ulozData();
+                aktualizujDock();
+                pridatModalEl.classList.add("skryty");
+                vykresliFilmy();
+            }
+        });
+
+        vykresliFilmy();
+    </script>
+</body>
+</html>
